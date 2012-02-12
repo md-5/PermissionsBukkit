@@ -9,10 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-/**
- * Player listener: takes care of registering and unregistering players on join
- */
-class PlayerListener implements Listener {
+public class PlayerListener implements Listener {
 
     private PermissionsPlugin plugin;
 
@@ -39,15 +36,14 @@ class PlayerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR) {
-            return;
-        }
-        if (!event.getPlayer().isOp() && !event.getPlayer().hasPermission("permissions.build")) {
-            if (event.getAction() != Action.PHYSICAL && plugin.getConfig().getString("messages.build", "").length() > 0) {
-                String message = plugin.getConfig().getString("messages.build", "").replace('&', '\u00A7');
-                event.getPlayer().sendMessage(message);
+        if (event.hasBlock()) {
+            if (!event.getPlayer().isOp() && !event.getPlayer().hasPermission("permissions.build")) {
+                if (event.getAction() != Action.PHYSICAL && plugin.getConfig().getString("messages.build", "").length() > 0) {
+                    String message = plugin.getConfig().getString("messages.build", "").replace('&', '\u00A7');
+                    event.getPlayer().sendMessage(message);
+                }
+                event.setCancelled(true);
             }
-            event.setCancelled(true);
         }
     }
 }

@@ -1,12 +1,6 @@
 package com.platymuus.bukkit.permissions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -198,7 +192,7 @@ class PermissionsCommand implements CommandExecutor {
             }
 
             String result = "", sep = "";
-            for (String key : plugin.getNode("groups").getKeys()) {
+            for (String key : plugin.getNode("groups").getKeys(false)) {
                 result += sep + key;
                 sep = ", ";
             }
@@ -220,8 +214,8 @@ class PermissionsCommand implements CommandExecutor {
 
             int count = 0;
             String text = "", sep = "";
-            for (String user : plugin.getNode("users").getKeys()) {
-                if (plugin.getNode("users." + user).getStringList("groups", new ArrayList<String>()).contains(group)) {
+            for (String user : plugin.getNode("users").getKeys(false)) {
+                if (plugin.getNode("users." + user).getStringList("groups").contains(group)) {
                     ++count;
                     text += sep + user;
                     sep = ", ";
@@ -255,9 +249,9 @@ class PermissionsCommand implements CommandExecutor {
                 createGroupNode(group, node);
             }
 
-            Map<String, Object> list = plugin.getNode("groups." + group + "." + node).getAll();
+            Map<String, Object> list = plugin.getNode("groups." + group + "." + node).getValues(false);
             list.put(perm, value);
-            plugin.getNode("groups." + group).setProperty(node, list);
+            plugin.getNode("groups." + group).set(node, list);
 
             plugin.refreshPermissions();
 
@@ -288,13 +282,13 @@ class PermissionsCommand implements CommandExecutor {
                 createGroupNode(group, node);
             }
 
-            Map<String, Object> list = plugin.getNode("groups." + group + "." + node).getAll();
+            Map<String, Object> list = plugin.getNode("groups." + group + "." + node).getValues(false);
             if (!list.containsKey(perm)) {
                 sender.sendMessage(ChatColor.GREEN + "Group " + ChatColor.WHITE + group + ChatColor.GREEN + " did not have " + ChatColor.WHITE + perm + ChatColor.GREEN + " set.");
                 return true;
             }
             list.remove(perm);
-            plugin.getNode("groups." + group).setProperty(node, list);
+            plugin.getNode("groups." + group).set(node, list);
 
             plugin.refreshPermissions();
 
@@ -327,7 +321,7 @@ class PermissionsCommand implements CommandExecutor {
 
             int count = 0;
             String text = "", sep = "";
-            for (String group : plugin.getNode("users." + player).getStringList("groups", new ArrayList<String>())) {
+            for (String group : plugin.getNode("users." + player).getStringList("groups")) {
                 ++count;
                 text += sep + group;
                 sep = ", ";
@@ -348,7 +342,7 @@ class PermissionsCommand implements CommandExecutor {
                 createPlayerNode(player);
             }
 
-            plugin.getNode("users." + player).setProperty("groups", Arrays.asList(groups));
+            plugin.getNode("users." + player).set("groups", Arrays.asList(groups));
             plugin.refreshPermissions();
 
             sender.sendMessage(ChatColor.GREEN + "Player " + ChatColor.WHITE + player + ChatColor.GREEN + " is now in " + ChatColor.WHITE + split[3] + ChatColor.GREEN + ".");
@@ -367,13 +361,13 @@ class PermissionsCommand implements CommandExecutor {
                 createPlayerNode(player);
             }
 
-            List<String> list = plugin.getNode("users." + player).getStringList("groups", new ArrayList<String>());
+            List<String> list = plugin.getNode("users." + player).getStringList("groups");
             if (list.contains(group)) {
                 sender.sendMessage(ChatColor.GREEN + "Player " + ChatColor.WHITE + player + ChatColor.GREEN + " was already in " + ChatColor.WHITE + group + ChatColor.GREEN + ".");
                 return true;
             }
             list.add(group);
-            plugin.getNode("users." + player).setProperty("groups", list);
+            plugin.getNode("users." + player).set("groups", list);
 
             plugin.refreshPermissions();
 
@@ -393,13 +387,13 @@ class PermissionsCommand implements CommandExecutor {
                 createPlayerNode(player);
             }
 
-            List<String> list = plugin.getNode("users." + player).getStringList("groups", new ArrayList<String>());
+            List<String> list = plugin.getNode("users." + player).getStringList("groups");
             if (!list.contains(group)) {
                 sender.sendMessage(ChatColor.GREEN + "Player " + ChatColor.WHITE + player + ChatColor.GREEN + " was not in " + ChatColor.WHITE + group + ChatColor.GREEN + ".");
                 return true;
             }
             list.remove(group);
-            plugin.getNode("users." + player).setProperty("groups", list);
+            plugin.getNode("users." + player).set("groups", list);
 
             plugin.refreshPermissions();
 
@@ -430,9 +424,9 @@ class PermissionsCommand implements CommandExecutor {
                 createPlayerNode(player, node);
             }
 
-            Map<String, Object> list = plugin.getNode("users." + player + "." + node).getAll();
+            Map<String, Object> list = plugin.getNode("users." + player + "." + node).getValues(false);
             list.put(perm, value);
-            plugin.getNode("users." + player).setProperty(node, list);
+            plugin.getNode("users." + player).set(node, list);
 
             plugin.refreshPermissions();
 
@@ -462,13 +456,13 @@ class PermissionsCommand implements CommandExecutor {
                 createPlayerNode(player, node);
             }
 
-            Map<String, Object> list = plugin.getNode("users." + player + "." + node).getAll();
+            Map<String, Object> list = plugin.getNode("users." + player + "." + node).getValues(false);
             if (!list.containsKey(perm)) {
                 sender.sendMessage(ChatColor.GREEN + "Player " + ChatColor.WHITE + player + ChatColor.GREEN + " did not have " + ChatColor.WHITE + perm + ChatColor.GREEN + " set.");
                 return true;
             }
             list.remove(perm);
-            plugin.getNode("users." + player).setProperty(node, list);
+            plugin.getNode("users." + player).set(node, list);
 
             plugin.refreshPermissions();
 
@@ -490,17 +484,17 @@ class PermissionsCommand implements CommandExecutor {
         if (plugin.getNode("users") == null) {
             plugin.getConfig().set("users", new HashMap<String, Object>());
         }
-        plugin.getNode("users").setProperty(player, user);
+        plugin.getNode("users").set(player, user);
     }
 
     private void createPlayerNode(String player, String subnode) {
         HashMap<String, Object> empty = new HashMap<String, Object>();
-        plugin.getNode("users." + player).setProperty(subnode, empty);
+        plugin.getNode("users." + player).set(subnode, empty);
     }
 
     private void createGroupNode(String group, String subnode) {
         HashMap<String, Object> empty = new HashMap<String, Object>();
-        plugin.getNode("groups." + group).setProperty(subnode, empty);
+        plugin.getNode("groups." + group).set(subnode, empty);
     }
 
     // -- utilities --

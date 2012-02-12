@@ -5,10 +5,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
-/**
- * Player listener: takes care of registering and unregistering players on join
- */
-class BlockListener implements Listener {
+public class BlockListener implements Listener {
 
     private PermissionsPlugin plugin;
 
@@ -16,7 +13,7 @@ class BlockListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         if (!event.getPlayer().isOp() && !event.getPlayer().hasPermission("permissions.build")) {
             if (plugin.getConfig().getString("messages.build", "").length() > 0) {
@@ -27,7 +24,7 @@ class BlockListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         if (!event.getPlayer().isOp() && !event.getPlayer().hasPermission("permissions.build")) {
             if (plugin.getConfig().getString("messages.build", "").length() > 0) {

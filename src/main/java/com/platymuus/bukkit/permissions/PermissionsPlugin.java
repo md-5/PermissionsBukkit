@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.ConfigurationNode;
 
 /**
  * Main class for PermissionsBukkit.
@@ -62,7 +62,7 @@ public class PermissionsPlugin extends JavaPlugin {
      */
     public Group getGroup(String groupName) {
         if (getNode("groups") != null) {
-            for (String key : getNode("groups").getKeys()) {
+            for (String key : getNode("groups").getKeys(false)) {
                 if (key.equalsIgnoreCase(groupName)) {
                     return new Group(this, key);
                 }
@@ -80,7 +80,7 @@ public class PermissionsPlugin extends JavaPlugin {
     public List<Group> getGroups(String playerName) {
         ArrayList<Group> result = new ArrayList<Group>();
         if (getNode("users." + playerName) != null) {
-            for (String key : getNode("users." + playerName).getStringList("groups", new ArrayList<String>())) {
+            for (String key : getNode("users." + playerName).getStringList("groups")) {
                 result.add(new Group(this, key));
             }
         } else {
@@ -111,7 +111,7 @@ public class PermissionsPlugin extends JavaPlugin {
     public List<Group> getAllGroups() {
         ArrayList<Group> result = new ArrayList<Group>();
         if (getNode("groups") != null) {
-            for (String key : getNode("groups").getKeys()) {
+            for (String key : getNode("groups").getKeys(false)) {
                 result.add(new Group(this, key));
             }
         }
@@ -163,7 +163,7 @@ public class PermissionsPlugin extends JavaPlugin {
         }
     }
 
-    protected ConfigurationNode getNode(String child) {
+    protected ConfigurationSection getNode(String child) {
         return getNode("", child);
     }
 
@@ -174,14 +174,14 @@ public class PermissionsPlugin extends JavaPlugin {
     }
 
     // -- Private stuff
-    private ConfigurationNode getNode(String parent, String child) {
-        ConfigurationNode parentNode = null;
+    private ConfigurationSection getNode(String parent, String child) {
+        ConfigurationSection parentNode = null;
         if (child.contains(".")) {
             int index = child.lastIndexOf('.');
             parentNode = getNode("", child.substring(0, index));
             child = child.substring(index + 1);
         } else if (parent.length() == 0) {
-            parentNode = getConfiguration();
+            parentNode = getConfig();
         } else if (parent.contains(".")) {
             int index = parent.indexOf('.');
             parentNode = getNode(parent.substring(0, index), parent.substring(index + 1));
@@ -193,9 +193,9 @@ public class PermissionsPlugin extends JavaPlugin {
             return null;
         }
 
-        for (String entry : parentNode.getKeys()) {
+        for (String entry : parentNode.getKeys(false)) {
             if (child.equalsIgnoreCase(entry)) {
-                return parentNode.getNode(entry);
+                return parentNode.getConfigurationSection(entry);
             }
         }
         return null;
@@ -231,16 +231,16 @@ public class PermissionsPlugin extends JavaPlugin {
             return calculateGroupPermissions("default", world);
         }
 
-        Map<String, Object> perms = getNode("users." + player + ".permissions") == null ? new HashMap<String, Object>() : getNode("users." + player + ".permissions").getAll();
+        Map<String, Object> perms = getNode("users." + player + ".permissions") == null ? new HashMap<String, Object>() : getNode("users." + player + ".permissions").getValues(false);
 
         if (getNode("users." + player + ".worlds." + world) != null) {
-            for (Map.Entry<String, Object> entry : getNode("users." + player + ".worlds." + world).getAll().entrySet()) {
+            for (Map.Entry<String, Object> entry : getNode("users." + player + ".worlds." + world).getValues(false).entrySet()) {
                 // No containskey; world overrides non-world
                 perms.put(entry.getKey(), entry.getValue());
             }
         }
 
-        for (String group : getNode("users." + player).getStringList("groups", new ArrayList<String>())) {
+        for (String group : getNode("users." + player).getStringList("groups")) {
             for (Map.Entry<String, Object> entry : calculateGroupPermissions(group, world).entrySet()) {
                 if (!perms.containsKey(entry.getKey())) { // User overrides group
                     perms.put(entry.getKey(), entry.getValue());
@@ -256,16 +256,16 @@ public class PermissionsPlugin extends JavaPlugin {
             return new HashMap<String, Object>();
         }
 
-        Map<String, Object> perms = getNode("groups." + group + ".permissions") == null ? new HashMap<String, Object>() : getNode("groups." + group + ".permissions").getAll();
+        Map<String, Object> perms = getNode("groups." + group + ".permissions") == null ? new HashMap<String, Object>() : getNode("groups." + group + ".permissions").getValues(false);
 
         if (getNode("groups." + group + ".worlds." + world) != null) {
-            for (Map.Entry<String, Object> entry : getNode("groups." + group + ".worlds." + world).getAll().entrySet()) {
+            for (Map.Entry<String, Object> entry : getNode("groups." + group + ".worlds." + world).getValues(false).entrySet()) {
                 // No containskey; world overrides non-world
                 perms.put(entry.getKey(), entry.getValue());
             }
         }
 
-        for (String parent : getNode("groups." + group).getStringList("inheritance", new ArrayList<String>())) {
+        for (String parent : getNode("groups." + group).getStringList("inheritance")) {
             for (Map.Entry<String, Object> entry : calculateGroupPermissions(parent, world).entrySet()) {
                 if (!perms.containsKey(entry.getKey())) { // Children override permissions
                     perms.put(entry.getKey(), entry.getValue());
