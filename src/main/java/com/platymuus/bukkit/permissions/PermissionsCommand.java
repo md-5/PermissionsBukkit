@@ -42,7 +42,6 @@ class PermissionsCommand implements CommandExecutor {
             if (!checkPerm(sender, "reload")) {
                 return true;
             }
-            plugin.getConfiguration().load();
             plugin.refreshPermissions();
             sender.sendMessage(ChatColor.GREEN + "Configuration reloaded.");
             return true;
@@ -489,7 +488,7 @@ class PermissionsCommand implements CommandExecutor {
         HashMap<String, Object> user = new HashMap<String, Object>();
         user.put("groups", groups);
         if (plugin.getNode("users") == null) {
-            plugin.getConfiguration().setProperty("users", new HashMap<String, Object>());
+            plugin.getConfig().set("users", new HashMap<String, Object>());
         }
         plugin.getNode("users").setProperty(player, user);
     }

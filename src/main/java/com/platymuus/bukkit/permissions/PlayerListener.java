@@ -1,12 +1,18 @@
 package com.platymuus.bukkit.permissions;
 
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 /**
  * Player listener: takes care of registering and unregistering players on join
  */
-class PlayerListener extends org.bukkit.event.player.PlayerListener {
+class PlayerListener implements Listener {
 
     private PermissionsPlugin plugin;
 
@@ -14,42 +20,31 @@ class PlayerListener extends org.bukkit.event.player.PlayerListener {
         this.plugin = plugin;
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         plugin.debug("Player " + event.getPlayer().getName() + " joined, registering...");
         plugin.registerPlayer(event.getPlayer());
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        plugin.debug("Player " + event.getPlayer().getName() + " quit, unregistering...");
+        plugin.debug("Player " + event.getPlayer().getName() + " left, unregistering...");
         plugin.unregisterPlayer(event.getPlayer());
     }
 
-    @Override
-    public void onPlayerKick(PlayerKickEvent event) {
-        plugin.debug("Player " + event.getPlayer().getName() + " was kicked, unregistering...");
-        plugin.unregisterPlayer(event.getPlayer());
-    }
-
-    @Override
-    public void onPlayerMove(PlayerMoveEvent event) {
-        plugin.setLastWorld(event.getPlayer().getName(), event.getTo().getWorld().getName());
-    }
-
-    @Override
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         plugin.setLastWorld(event.getPlayer().getName(), event.getTo().getWorld().getName());
     }
 
-    @Override
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR) {
             return;
         }
         if (!event.getPlayer().isOp() && !event.getPlayer().hasPermission("permissions.build")) {
-            if (event.getAction() != Action.PHYSICAL && plugin.getConfiguration().getString("messages.build", "").length() > 0) {
-                String message = plugin.getConfiguration().getString("messages.build", "").replace('&', '\u00A7');
+            if (event.getAction() != Action.PHYSICAL && plugin.getConfig().getString("messages.build", "").length() > 0) {
+                String message = plugin.getConfig().getString("messages.build", "").replace('&', '\u00A7');
                 event.getPlayer().sendMessage(message);
             }
             event.setCancelled(true);
