@@ -16,7 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class PermissionsPlugin extends JavaPlugin {
 
-    private BlockListener blockListener = new BlockListener(this);
+    private BuildListener blockListener = new BuildListener(this);
     private PlayerListener playerListener = new PlayerListener(this);
     private PermissionsCommand commandExecutor = new PermissionsCommand(this);
     private HashMap<String, PermissionAttachment> permissions = new HashMap<String, PermissionAttachment>();
