@@ -3,9 +3,9 @@ package com.platymuus.bukkit.permissions;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class PlayerListener implements Listener {
 
@@ -28,7 +28,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerTeleport(PlayerTeleportEvent event) {
-        plugin.setLastWorld(event.getPlayer().getName(), event.getTo().getWorld().getName());
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        plugin.setLastWorld(event.getPlayer().getName(), event.getPlayer().getLocation().getWorld().getName());
     }
 }
